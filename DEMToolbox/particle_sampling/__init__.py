@@ -5,3 +5,4 @@ from .sample_2d_slice import sample_2d_slice
 from .sample_2d import sample_2d
 from .sample_3d_cylinder import sample_3d_cylinder
 from .sample_3d import sample_3d
+from .sample_by_shape import sample_by_shape
