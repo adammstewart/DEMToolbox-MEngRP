@@ -3,12 +3,15 @@ import warnings
 
 from ..classes.particle_samples import ParticleSamples
 from ..classes.particle_attribute import ParticleAttribute
+from ..particle_attributes.calculate_volume import calculate_volume
 
 def sample_1d_volume(particle_data, 
                      sample_vector, 
                      resolution=2, 
                      append_column=None,
-                     particle_id_column="id"):
+                     particle_id_column="id",
+                     sphere_radius=0.0005,
+                     aspect_ratio=1.0):
     """Sample the particles into equal volume samples along a specified vector.
 
     This function samples the particles into equal volume samples along a
@@ -18,6 +21,12 @@ def sample_1d_volume(particle_data,
     data will have a new column added with the sample class for each 
     particle, and a ParticleSamples object will be returned containing
     the sample information.
+
+    Added volume calculation using the `calculate_volume` function, that was previously 
+    added to the DEMToolbox package for use in MEng RP, to ensure that the sampling is 
+    based on corrected particle volumes for multispheres with aspect ratios greater than 
+    1.0, as the sampling is based on the cumulative volume of the particles along the 
+    specified vector.
 
     Parameters
     ----------
@@ -37,7 +46,12 @@ def sample_1d_volume(particle_data,
     particle_id_column : str, optional
         The name of the particle id column in the particle data, by
         default "id".
-
+    sphere_radius : float, optional
+        Radius of sphere in vtk data for binary system where spheres all 
+        have the same radius. By default 0.0005 m, as this was the
+        value for MEng RP.
+    aspect_ratio : float, optional
+        The aspect ratio of the multisphere particles, by default 1.0.
     Returns
     -------
     particle_data : vtkPolyData
@@ -98,8 +112,7 @@ def sample_1d_volume(particle_data,
     sorted_indices = np.argsort(resolved_points)
 
     if particle_data.point_data.get("volume") is None:
-        volume = 4/3 * np.pi * (particle_data.point_data["radius"] ** 3)
-        particle_data.point_data["volume"] = volume
+        particle_data, _ = calculate_volume(particle_data, aspect_ratio, sphere_radius)
 
     sorted_volume = particle_data.point_data["volume"][sorted_indices]
     cumulative_volume = np.cumsum(sorted_volume)
