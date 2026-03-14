@@ -46,5 +46,5 @@ pip install git+https://github.com/adammstewart/DEMToolbox-MEngRP/
 
 ## Code Functionality
 
-- [Quantify mixing performance](https://github.com/Jack-Grogan/DEMToolbox/tree/main/DEMToolbox/mixing)
-- [Velocity vector fields](https://github.com/Jack-Grogan/DEMToolbox/tree/main/DEMToolbox/velocity)
+- [Quantify mixing performance](https://github.com/adammstewart/DEMToolbox-MEngRP/tree/main/DEMToolbox/mixing)
+- [Velocity vector fields](https://github.com/adammstewart/DEMToolbox-MEngRP/tree/main/DEMToolbox/velocity)
