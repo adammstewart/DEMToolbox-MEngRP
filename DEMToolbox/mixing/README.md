@@ -1,5 +1,5 @@
 # Mixing
-## The Lacey Mixing Index
+## The Lacey Mixing Index 
 ### Theory
 
 The Lacey mixing index, equation 1, is a measure of the sample variance of a target 
@@ -173,7 +173,7 @@ not defined, is titled `f"{sample_vector[0]}_{sample_vector[1]}_{sample_vector[2
 Visualising in ParaView we can see the particles are perfectly segregated
 into equal volumes:
 
-![z_split_segregated](https://github.com/Jack-Grogan/DEMToolbox/blob/main/docs/images/z_split_segregated.png) 
+![z_split_segregated](https://github.com/adammstewart/DEMToolbox-MEngRP/blob/main/docs/images/z_split_segregated.png) 
 
 Alternatively radial divisions of equal volume can be defined with the 
 function `sample_1d_volume_cylinder`, the remainder of this example will
@@ -196,7 +196,7 @@ settled_data, samples_cylinder = sample_1d_volume_cylinder(settled_data,
 settled_data.save("updated_settled_particles.vtk")
 ```
 
-![r_split_segregated](https://github.com/Jack-Grogan/DEMToolbox/blob/main/docs/images/r_split_segregated.png) 
+![r_split_segregated](https://github.com/adammstewart/DEMToolbox-MEngRP/blob/main/docs/images/r_split_segregated.png) 
 
 Lacey needs to track how these two particles, different only in colour,
 disperse. Each particle id's associated colour must therefore be appended to
@@ -221,7 +221,7 @@ mixed_data.save("updated_mixed_particles.vtk")
 
 The mixed data now has each unique particle coloured appropriately:
 
-![z_split_mixed](https://github.com/Jack-Grogan/DEMToolbox/blob/main/docs/images/z_split_mixed.png) 
+![z_split_mixed](https://github.com/adammstewart/DEMToolbox-MEngRP/blob/main/docs/images/z_split_mixed.png) 
 
 ### Defining samples throughout the system as required by Lacey
 
@@ -291,7 +291,7 @@ If not specified otherwise `sample_3d` will append a column titled
 `"3D_samples"` to the vtk files. The generated samples can be visualised
 in ParaView:
 
-![lacey_samples](https://github.com/Jack-Grogan/DEMToolbox/blob/main/docs/images/lacey_samples.png) 
+![lacey_samples](https://github.com/adammstewart/DEMToolbox-MEngRP/blob/main/docs/images/lacey_samples.png) 
 
 ### Calculating the Lacey mixing index.
 
@@ -319,11 +319,11 @@ The settled and mixed data now have a column assigning the samples target
 particle volume fraction to each particle in the sample allowing for 
 visualisation in ParaView of the initially segregated state:
 
-![segregated_conc](https://github.com/Jack-Grogan/DEMToolbox/blob/main/docs/images/segregated_conc.png) 
+![segregated_conc](https://github.com/adammstewart/DEMToolbox-MEngRP/blob/main/docs/images/segregated_conc.png) 
 
 and the mixed state:
 
-![mixed_conc](https://github.com/Jack-Grogan/DEMToolbox/blob/main/docs/images/mixed_conc.png) 
+![mixed_conc](https://github.com/adammstewart/DEMToolbox-MEngRP/blob/main/docs/images/mixed_conc.png) 
 
 
 ## Nomenclature
