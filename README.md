@@ -12,8 +12,8 @@ sped up using `ProcesssPoolExecutor` from
 [concurrent.futures](https://docs.python.org/3/library/concurrent.futures.html).
 
 This fork of [Jack Grogan's DEMToolbox](https://github.com/Jack-Grogan/DEMToolbox)
-was for use in a masters research project, in order to add account for "overestimation" 
-in volume calculations due to subsphere overlaps in multispheres.
+was for use in a masters research project, very small additions were made in order to
+account for "overestimation" in volume calculations due to subsphere overlaps in multispheres.
 
 ## Getting Started
 
