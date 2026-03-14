@@ -122,6 +122,28 @@ The mean particle volume, $\bar{v}$, divided by the volume of particles within e
 
 Defining the variance of a completely mixed state using a binomial distribution can yield Lacey mixing indices greater than 1; however, such values reflect random sampling fluctuations rather than increased homogeneity.
 
+### Volume Calculations
+`calculate_volume` uses radius values stored in the vtk files to calculate sphere volumes.
+When the user provides a value for `aspect_ratio` a correction factor is calculated, based on the known 
+volume of the multisphere (defined in the code as the `sphere_radius` value of a sphere of 
+equal volume to the multisphere) and the total volume of the subspheres that the multisphere 
+is comprised of. The correction factor is then applied to the total volume of the multispheres. 
+The research project looked at aspect ratios ranging from 1.2 to 3.0 with 0.2 jumps, and as 
+such the code may not work immediately for other values.
+
+```python
+import pyvista as pv
+from DEMToolbox.particle_attributes import calculate_volume
+
+settled_data = pv.read("settled_particles.vtk")
+
+settled_data, settled_volume = calculate_volume(settled_data, aspect_ratio, sphere_radius)
+
+settled_data.save("updated_settled_particles.vtk")
+```
+The returned `settled_data` is now updated with a column titled `volume`.
+Some functions in DEMToolbox have been amended to make use of `calculate_volume` 
+instead of calculating volume themselves.
 
 ### Defining the binary particle system required by Lacey
 The Lacey mixing index requires two particle types to be present within the 
