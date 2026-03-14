@@ -11,19 +11,23 @@ simulation output files. This problem is "embarrassingly parallel" and can be
 sped up using `ProcesssPoolExecutor` from 
 [concurrent.futures](https://docs.python.org/3/library/concurrent.futures.html).
 
+This fork of [Jack Grogan's DEMToolbox](https://github.com/Jack-Grogan/DEMToolbox)
+was for use in a masters research project, in order to add account for "overestimation" 
+in volume calculations due to subsphere overlaps in multispheres.
+
 ## Getting Started
 
 To install locally run:
 
 ```zsh
-pip install git+https://github.com/Jack-Grogan/DEMToolbox/
+pip install git+https://github.com/adammstewart/DEMToolbox-MEngRP/
 ```
 
 If running code on a HPC add this code into your batch run script prior to script execution:
 
 ```bash
 export VENV_DIR="${HOME}/virtual-environments"
-export VENV_PATH="${VENV_DIR}/DEMToolbox"
+export VENV_PATH="${VENV_DIR}/DEMToolbox-MEngRP"
 
 # Create a master venv directory if necessary
 mkdir -p ${VENV_DIR}
@@ -37,7 +41,7 @@ fi
 source ${VENV_PATH}/bin/activate
 
 python -m pip install --upgrade pip
-pip install git+https://github.com/Jack-Grogan/DEMToolbox/
+pip install git+https://github.com/adammstewart/DEMToolbox-MEngRP/
 ```
 
 ## Code Functionality
