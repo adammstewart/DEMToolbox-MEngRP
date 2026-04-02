@@ -13,6 +13,10 @@ def sample_by_shape(particle_data,
                     particle_id_column="id"):
     """Sample the particles based on whether they are spheres or multispheres.
 
+    This function is for if you are an idiot and forgot to set the atom type of 
+    your particles in LIGGGHTS to be different for spheres and multispheres, and 
+    now you want to classify them and the only way to diferentiate them is by their radius.
+
     This function classifies particles into two distinct samples: 
     0 (Spheres) and 1 (Multisphere subspheres). The classification is determined by 
     comparing the particle's radius to the specified sphere_radius. The 
