@@ -4,7 +4,10 @@ from sklearn.metrics import r2_score
 from functools import partial
 
 def lacey_mixing_curve(time, k, tau, m0):
-    """Curve for the Lacey mixing model.
+    """
+    ## Original DEMToolbox function description from Jack Grogan
+
+    ### Curve for the Lacey mixing model.
 
     The Lacey mixing model is a exponential model that describes the 
     mixing of a binary system. The model is classically defined as [1] 
@@ -30,8 +33,7 @@ def lacey_mixing_curve(time, k, tau, m0):
     onset of exponential mixing Ratnayake et al.'s model reduces to the
     classical Lacey mixing model.
 
-    References
-    ----------
+    ### References
 
     [1] Lacey PM. Developments in the theory of particle mixing. 
         Journal of applied chemistry. 1954 May;4(5):257-68.
@@ -40,6 +42,15 @@ def lacey_mixing_curve(time, k, tau, m0):
         approach to mixing rate determination in powder mixers. Powder 
         Technology. 2018 Aug 1;336:493-505.
 
+    ## MEng-RP additions
+
+    In my MEng-RP a singular value of resolution was used to sample multiple fill heights, as such  the bin volumes vary across runs. This may mean that :math:`M_0 != 0` and varies across runs, and also may mean that :math:`M_{final} != 1`. The above proposed model already uses :math:`M_0` as a parameter, and as such no changes are made in that respect. However, the final value of the Lacey mixing index is taken to be 1 in these models. For the purpose of time-series analysis in my MEng-RP, the term :math:`M_{plateau}` is used to represent the value of Lacey mixing index when the system cannot become more mixed, where :math:`0<M_{plateau}<=1.` As such the Lacey mixing model is expressed as:
+
+    .. math::
+    
+        M(t) = M_{plateau} - (M_{plateau} - M_0) e^{-kt}.
+
+    Due to the nature of sampling, :math:`M` continues to vary slightly, even after a "stable" degree of mixing has been reached. For the purpose of my MEng-RP, whether a mixture had reached :math:`M_{plateau}` is determined as the point at which the variance of 10 consecutive values of :math:`M` falls below a threshold value, 0.01, and the value of :math:`M_{plateau}` is taken to be the mean of those 10 values.
     
     Parameters
     ----------
@@ -85,7 +96,10 @@ def lacey_mixing_curve(time, k, tau, m0):
     return [max((1 - (1 - m0) * np.exp(-k*(t - tau))), m0) for t in time]
 
 def lacey_mixing_curve_fit(time, m, t0=0, tend=None):
-    """Fit the Lacey mixing curve to the data.
+    """
+    ## Original DEMToolbox function description from Jack Grogan
+
+    ### Fit the Lacey mixing curve to the data.
 
     The Lacey mixing model is a exponential model that describes the 
     mixing of a binary system. The model is classically defined as [1] 
@@ -111,8 +125,7 @@ def lacey_mixing_curve_fit(time, m, t0=0, tend=None):
     onset of exponential mixing Ratnayake et al.'s model reduces to the
     classical Lacey mixing model.
 
-    References
-    ----------
+    ### References
 
     [1] Lacey PM. Developments in the theory of particle mixing. 
         Journal of applied chemistry. 1954 May;4(5):257-68.
@@ -121,7 +134,22 @@ def lacey_mixing_curve_fit(time, m, t0=0, tend=None):
         approach to mixing rate determination in powder mixers. Powder 
         Technology. 2018 Aug 1;336:493-505.
 
+    ## MEng-RP additions
+
+    In my MEng-RP a singular value of resolution was used to sample multiple fill heights, as such  the bin volumes vary across runs. This may mean that :math:`M_0 != 0` and varies across runs, and also may mean that :math:`M_{final} != 1`. The above proposed models already use :math:`M_0` as a parameter, and as such no changes are made in that respect. However, the final value of the Lacey mixing index is taken to be 1 in these models. For the purpose of time-series analysis in my MEng-RP, the term :math:`M_{plateau}` is used to represent the value of Lacey mixing index when the system cannot become more mixed, where :math:`0<M_{plateau}<=1.` As such the Lacey mixing model and the extended model are expressed as:
+
+    .. math::
     
+        M(t) = M_{plateau} - (M_{plateau} - M_0) e^{-kt},
+
+    and
+    .. math::
+        M(t) = max(M_{plateau} - (M_{plateau} - M_0) e^{-k(t - \\tau)})
+
+    respectively.
+
+    Due to the nature of sampling, :math:`M` continues to vary slightly, even after a "stable" degree of mixing has been reached. For the purpose of my MEng-RP, whether a mixture had reached :math:`M_{plateau}` is determined as the point at which the variance of 10 consecutive values of :math:`M` falls below a threshold value, 0.01, and the value of :math:`M_{plateau}` is taken to be the mean of those 10 values.
+
     Parameters
     ----------
     time : array-like
