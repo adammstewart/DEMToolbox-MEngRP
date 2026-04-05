@@ -221,6 +221,8 @@ def lacey_mixing_curve_fit(time, m, window_size=10, std_threshold=0.001, t0=0, t
         calculated using the optimal parameters.
     m_plateau : float
         The calculated plateau value of the Lacey mixing index.
+    r2 : float
+        The coefficient of determination of the fit.
 
     Raises
     ------
@@ -296,5 +298,5 @@ def lacey_mixing_curve_fit(time, m, window_size=10, std_threshold=0.001, t0=0, t
                         )
     
     m_fit = partial_lacey_mixing_curve(time_mixing, *popt)
-
-    return popt, pcov, time_mixing, m_mixing, m_fit, m_plateau
+    r2 = r2_score(m_mixing, m_fit)
+    return popt, pcov, time_mixing, m_mixing, m_fit, m_plateau, r2
