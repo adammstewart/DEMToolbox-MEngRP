@@ -45,13 +45,27 @@ def lacey_mixing_curve(time, k, tau, m0, m_plateau=1.0):
 
     ## MEng-RP additions
 
-    In my MEng-RP a singular value of resolution was used to sample multiple fill heights, as such  the bin volumes vary across runs. This may mean that :math:`M_0 != 0` and varies across runs, and also may mean that :math:`M_{final} != 1`. The above proposed model already uses :math:`M_0` as a parameter, and as such no changes are made in that respect. However, the final value of the Lacey mixing index is taken to be 1 in these models. For the purpose of time-series analysis in my MEng-RP, the term :math:`M_{plateau}` is used to represent the value of Lacey mixing index when the system cannot become more mixed, where :math:`0<M_{plateau}<=1.` As such the Lacey mixing model is expressed as:
+    In my MEng-RP a singular value of resolution was used to sample multiple 
+    fill heights, as such  the bin volumes vary across runs. This may mean that 
+    :math:`M_0 != 0` and varies across runs, and also may mean that 
+    :math:`M_{final} != 1`. The above proposed model already uses :math:`M_0` 
+    as a parameter, and as such no changes are made in that respect. However, the 
+    final value of the Lacey mixing index is taken to be 1 in these models. For 
+    the purpose of time-series analysis in my MEng-RP, the term :math:`M_{plateau}` 
+    is used to represent the value of Lacey mixing index when the system cannot 
+    become more mixed, where :math:`0<M_{plateau}<=1.` As such the Lacey mixing 
+    model is expressed as:
 
     .. math::
     
         M(t) = M_{plateau} - (M_{plateau} - M_0) e^{-kt}.
 
-    Due to the nature of sampling, :math:`M` continues to vary slightly, even after a "stable" degree of mixing has been reached. For the purpose of my MEng-RP, whether a mixture had reached :math:`M_{plateau}` is determined as the point at which the variance of 10 consecutive values of :math:`M` falls below a threshold value, 0.01, and the value of :math:`M_{plateau}` is taken to be the mean of those 10 values.
+    Due to the nature of sampling, :math:`M` continues to vary slightly, 
+    even after a "stable" degree of mixing has been reached. 
+    For the purpose of my MEng-RP, whether a mixture had reached :math:`M_{plateau}` 
+    is determined as the point at which the variance of a specified set of consecutive
+    values of :math:`M` falls below a threshold value of standard deviation, and the 
+    value of :math:`M_{plateau}` is taken to be the mean of those consecutive values.
     
     Parameters
     ----------
@@ -97,11 +111,12 @@ def lacey_mixing_curve(time, k, tau, m0, m_plateau=1.0):
         raise ValueError("m0 must be an integer or float")
     
     if not isinstance(m_plateau, (int, float)) or not (0 < m_plateau <= 1):
-        raise ValueError("m_plateau must be an integer or float between 0 (exclusive) and 1 (inclusive)")
+        raise ValueError("m_plateau must be an integer or float between 0 (exclusive) "
+        "and 1 (inclusive)")
     
     return [max((m_plateau - (m_plateau - m0) * np.exp(-k*(t - tau))), m0) for t in time]
 
-def lacey_mixing_curve_fit(time, m, window_size=10, var_threshold=0.01, t0=0, tend=None):
+def lacey_mixing_curve_fit(time, m, window_size=10, std_threshold=0.001, t0=0, tend=None):
     """
     ## Original DEMToolbox function description from Jack Grogan
 
@@ -142,7 +157,17 @@ def lacey_mixing_curve_fit(time, m, window_size=10, var_threshold=0.01, t0=0, te
 
     ## MEng-RP additions
 
-    In my MEng-RP a singular value of resolution was used to sample multiple fill heights, as such  the bin volumes vary across runs. This may mean that :math:`M_0 != 0` and varies across runs, and also may mean that :math:`M_{final} != 1`. The above proposed models already use :math:`M_0` as a parameter, and as such no changes are made in that respect. However, the final value of the Lacey mixing index is taken to be 1 in these models. For the purpose of time-series analysis in my MEng-RP, the term :math:`M_{plateau}` is used to represent the value of Lacey mixing index when the system cannot become more mixed, where :math:`0<M_{plateau}<=1.` As such the Lacey mixing model and the extended model are expressed as:
+    In my MEng-RP a singular value of resolution was used to sample 
+    multiple fill heights, as such  the bin volumes vary across runs. 
+    This may mean that :math:`M_0 != 0` and varies across runs, and also 
+    may mean that :math:`M_{final} != 1`. The above proposed models already 
+    use :math:`M_0` as a parameter, and as such no changes are made in that 
+    respect. However, the final value of the Lacey mixing index is taken to 
+    be 1 in these models. For the purpose of time-series analysis in my MEng-RP, 
+    the term :math:`M_{plateau}` is used to represent the value of Lacey 
+    mixing index when the system cannot become more mixed, where 
+    :math:`0<M_{plateau}<=1.` As such the Lacey mixing model and the extended 
+    model are expressed as:
 
     .. math::
     
@@ -154,7 +179,13 @@ def lacey_mixing_curve_fit(time, m, window_size=10, var_threshold=0.01, t0=0, te
 
     respectively.
 
-    Due to the nature of sampling, :math:`M` continues to vary slightly, even after a "stable" degree of mixing has been reached. For the purpose of my MEng-RP, whether a mixture had reached :math:`M_{plateau}` is determined as the point at which the variance of `window_size` consecutive values of :math:`M` falls below a threshold value, `var_threshold`, and the value of :math:`M_{plateau}` is taken to be the mean of those `window_size` values.
+    Due to the nature of sampling, :math:`M` continues to vary slightly, 
+    even after a "stable" degree of mixing has been reached. For the purpose of
+    my MEng-RP, whether a mixture had reached :math:`M_{plateau}` is determined 
+    as the point at which the standard deviation of `window_size` consecutive 
+    values of :math:`M` falls below a threshold value, `std_threshold`, and the 
+    value of :math:`M_{plateau}` is taken to be the mean of those `window_size` 
+    values.
 
     Parameters
     ----------
@@ -163,9 +194,11 @@ def lacey_mixing_curve_fit(time, m, window_size=10, var_threshold=0.01, t0=0, te
     m : array-like
         The lacey mixing index data.
     window_size : int, optional
-        The number of consecutive values to consider when determining if the system has reached the plateau value of the Lacey mixing index, by default 10.
-    var_threshold : float, optional
-        The variance threshold to determine if the system has reached the plateau value of the Lacey mixing index, by default 0.01.
+        The number of consecutive values to consider when determining if the 
+        system has reached the plateau value of the Lacey mixing index, by default 10.
+    std_threshold : float, optional
+        The standard deviation threshold to determine if the system has reached 
+        the plateau value of the Lacey mixing index, by default 0.01.
     t0 : int or float
         The time at which mixing begins by default 0.
     tend : int or float, optional
@@ -198,7 +231,7 @@ def lacey_mixing_curve_fit(time, m, window_size=10, var_threshold=0.01, t0=0, te
     ValueError
         If window_size is not an integer > 0.
     ValueError
-        If var_threshold is not a float or integer > 0.
+        If std_threshold is not a float or integer > 0.
     ValueError
         If t0 is not an integer or float.
     ValueError
@@ -217,8 +250,8 @@ def lacey_mixing_curve_fit(time, m, window_size=10, var_threshold=0.01, t0=0, te
     if not isinstance(window_size, int) or window_size <= 0:
         raise ValueError("window_size must be an integer > 0")
     
-    if not isinstance(var_threshold, (int, float)) or var_threshold <= 0:
-        raise ValueError("var_threshold must be a positive number")
+    if not isinstance(std_threshold, (int, float)) or std_threshold <= 0:
+        raise ValueError("std_threshold must be a positive number")
     
     if not isinstance(t0, (int, float)):
         raise ValueError("t0 must be an integer or float")
@@ -243,12 +276,14 @@ def lacey_mixing_curve_fit(time, m, window_size=10, var_threshold=0.01, t0=0, te
     if len(m_mixing) >= window_size:
         for i in range(len(m_mixing) - window_size + 1):
             window = m_mixing[i:i+window_size]
-            if np.var(window) < var_threshold:
+            if np.std(window) < std_threshold:
                 m_plateau = np.mean(window)
                 break
     
     if m_plateau is None:
-        warnings.warn(f"No contiguous {window_size}-value window with variance < {var_threshold} found. Setting m_plateau to 1.0.", UserWarning)
+        warnings.warn(f"No contiguous {window_size}-value window with \n"
+                      f"standard deviation < {std_threshold} found. Setting m_plateau \n"
+                      f"to 1.0.", UserWarning)
         m_plateau = 1.0
 
     partial_lacey_mixing_curve = partial(lacey_mixing_curve, m0=m0, m_plateau=m_plateau)
