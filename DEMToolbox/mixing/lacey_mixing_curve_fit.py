@@ -1,9 +1,10 @@
 import numpy as np
+import warnings
 from scipy.optimize import curve_fit
 from sklearn.metrics import r2_score
 from functools import partial
 
-def lacey_mixing_curve(time, k, tau, m0):
+def lacey_mixing_curve(time, k, tau, m0, m_plateau=1.0):
     """
     ## Original DEMToolbox function description from Jack Grogan
 
@@ -63,6 +64,8 @@ def lacey_mixing_curve(time, k, tau, m0):
         mixing.
     m0 : float
         The initial value of the Lacey mixing index.
+    m_plateau : float, optional
+        The plateau value of the Lacey mixing index, by default 1.0.
 
     Returns
     -------
@@ -93,9 +96,12 @@ def lacey_mixing_curve(time, k, tau, m0):
     if not isinstance(m0, (int, float)):
         raise ValueError("m0 must be an integer or float")
     
-    return [max((1 - (1 - m0) * np.exp(-k*(t - tau))), m0) for t in time]
+    if not isinstance(m_plateau, (int, float)) or not (0 < m_plateau <= 1):
+        raise ValueError("m_plateau must be an integer or float between 0 (exclusive) and 1 (inclusive)")
+    
+    return [max((m_plateau - (m_plateau - m0) * np.exp(-k*(t - tau))), m0) for t in time]
 
-def lacey_mixing_curve_fit(time, m, t0=0, tend=None):
+def lacey_mixing_curve_fit(time, m, window_size=10, var_threshold=0.01, t0=0, tend=None):
     """
     ## Original DEMToolbox function description from Jack Grogan
 
@@ -148,7 +154,7 @@ def lacey_mixing_curve_fit(time, m, t0=0, tend=None):
 
     respectively.
 
-    Due to the nature of sampling, :math:`M` continues to vary slightly, even after a "stable" degree of mixing has been reached. For the purpose of my MEng-RP, whether a mixture had reached :math:`M_{plateau}` is determined as the point at which the variance of 10 consecutive values of :math:`M` falls below a threshold value, 0.01, and the value of :math:`M_{plateau}` is taken to be the mean of those 10 values.
+    Due to the nature of sampling, :math:`M` continues to vary slightly, even after a "stable" degree of mixing has been reached. For the purpose of my MEng-RP, whether a mixture had reached :math:`M_{plateau}` is determined as the point at which the variance of `window_size` consecutive values of :math:`M` falls below a threshold value, `var_threshold`, and the value of :math:`M_{plateau}` is taken to be the mean of those `window_size` values.
 
     Parameters
     ----------
@@ -156,6 +162,10 @@ def lacey_mixing_curve_fit(time, m, t0=0, tend=None):
         The time data for the lacey mixing index.
     m : array-like
         The lacey mixing index data.
+    window_size : int, optional
+        The number of consecutive values to consider when determining if the system has reached the plateau value of the Lacey mixing index, by default 10.
+    var_threshold : float, optional
+        The variance threshold to determine if the system has reached the plateau value of the Lacey mixing index, by default 0.01.
     t0 : int or float
         The time at which mixing begins by default 0.
     tend : int or float, optional
@@ -176,6 +186,8 @@ def lacey_mixing_curve_fit(time, m, t0=0, tend=None):
     m_fit : array-like
         The predicted lacey mixing index values for the mixing period 
         calculated using the optimal parameters.
+    m_plateau : float
+        The calculated plateau value of the Lacey mixing index.
 
     Raises
     ------
@@ -183,6 +195,10 @@ def lacey_mixing_curve_fit(time, m, t0=0, tend=None):
         If time is not an array-like object.
     ValueError
         If m is not an array-like object.
+    ValueError
+        If window_size is not an integer > 0.
+    ValueError
+        If var_threshold is not a float or integer > 0.
     ValueError
         If t0 is not an integer or float.
     ValueError
@@ -197,6 +213,12 @@ def lacey_mixing_curve_fit(time, m, t0=0, tend=None):
     if not isinstance(m, np.ndarray):
         m = np.array(m)
         raise ValueError("m must be an array-like object")
+    
+    if not isinstance(window_size, int) or window_size <= 0:
+        raise ValueError("window_size must be an integer > 0")
+    
+    if not isinstance(var_threshold, (int, float)) or var_threshold <= 0:
+        raise ValueError("var_threshold must be a positive number")
     
     if not isinstance(t0, (int, float)):
         raise ValueError("t0 must be an integer or float")
@@ -216,7 +238,20 @@ def lacey_mixing_curve_fit(time, m, t0=0, tend=None):
     m0 = m_mixing[0]
     t0 = time_mixing[0]
 
-    partial_lacey_mixing_curve = partial(lacey_mixing_curve, m0=m0)
+    m_plateau = None
+
+    if len(m_mixing) >= window_size:
+        for i in range(len(m_mixing) - window_size + 1):
+            window = m_mixing[i:i+window_size]
+            if np.var(window) < var_threshold:
+                m_plateau = np.mean(window)
+                break
+    
+    if m_plateau is None:
+        warnings.warn(f"No contiguous {window_size}-value window with variance < {var_threshold} found. Setting m_plateau to 1.0.", UserWarning)
+        m_plateau = 1.0
+
+    partial_lacey_mixing_curve = partial(lacey_mixing_curve, m0=m0, m_plateau=m_plateau)
     popt, pcov = curve_fit(partial_lacey_mixing_curve, 
                         time_mixing, 
                         m_mixing,
@@ -227,4 +262,4 @@ def lacey_mixing_curve_fit(time, m, t0=0, tend=None):
     
     m_fit = partial_lacey_mixing_curve(time_mixing, *popt)
 
-    return popt, pcov, time_mixing, m_mixing, m_fit
+    return popt, pcov, time_mixing, m_mixing, m_fit, m_plateau
