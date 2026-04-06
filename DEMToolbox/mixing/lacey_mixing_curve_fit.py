@@ -116,7 +116,7 @@ def lacey_mixing_curve(time, k, tau, m0, m_plateau=1.0):
     
     return [max((m_plateau - (m_plateau - m0) * np.exp(-k*(t - tau))), m0) for t in time]
 
-def lacey_mixing_curve_fit(time, m, window_size=10, std_threshold=0.001, t0=0, tend=None):
+def lacey_mixing_curve_fit(time, m, window_size=10, std_threshold=0.001, t0=0, tend=None, k0=0.1):
     """
     ## Original DEMToolbox function description from Jack Grogan
 
@@ -204,6 +204,8 @@ def lacey_mixing_curve_fit(time, m, window_size=10, std_threshold=0.001, t0=0, t
     tend : int or float, optional
         The time at which mixing ends, by default None. If None, then
         all the time data from the start time will be used.
+    k0 : float, optional
+        The initial guess for the rate constant k, by default 0.1.
 
     Returns
     -------
@@ -240,6 +242,10 @@ def lacey_mixing_curve_fit(time, m, window_size=10, std_threshold=0.001, t0=0, t
         If tend is not an integer or float.
     ValueError
         If time and m are not the same length.
+    ValueError
+        If k0 is not an integer or float.
+    ValueError
+        If fewer than 3 valid data points remain after preprocessing.
     """
     if not isinstance(time, np.ndarray):
         time = np.array(time)
@@ -266,9 +272,31 @@ def lacey_mixing_curve_fit(time, m, window_size=10, std_threshold=0.001, t0=0, t
     if len(time) != len(m):
         raise ValueError("time and m must be the same length")
     
+    if not isinstance(k0, (int, float)):
+        raise ValueError("k0 must be an integer or float")
+    
     mixing_indices = (time >= t0) & (time <= tend)
     time_mixing = time[mixing_indices]
     m_mixing = m[mixing_indices]
+
+    # Preprocessing: drop NaNs
+    valid_mask = ~np.isnan(m_mixing) & ~np.isnan(time_mixing)
+    time_mixing = time_mixing[valid_mask]
+    m_mixing = m_mixing[valid_mask]
+
+    # Sort by time
+    sort_idx = np.argsort(time_mixing)
+    time_mixing = time_mixing[sort_idx]
+    m_mixing = m_mixing[sort_idx]
+
+    # Drop duplicate times, keeping the last
+    if len(time_mixing) > 0:
+        diff_mask = np.append(np.diff(time_mixing) != 0, True)
+        time_mixing = time_mixing[diff_mask]
+        m_mixing = m_mixing[diff_mask]
+
+    if len(time_mixing) < 3:
+        raise ValueError("At least 3 valid data points required to fit the Lacey curve")
 
     m0 = m_mixing[0]
     t0 = time_mixing[0]
@@ -292,7 +320,7 @@ def lacey_mixing_curve_fit(time, m, window_size=10, std_threshold=0.001, t0=0, t
     popt, pcov = curve_fit(partial_lacey_mixing_curve, 
                         time_mixing, 
                         m_mixing,
-                        p0=(0, t0), 
+                        p0=(k0, t0), 
                         bounds=([0, t0], [np.inf, np.inf]),
                         maxfev=10000,
                         )
