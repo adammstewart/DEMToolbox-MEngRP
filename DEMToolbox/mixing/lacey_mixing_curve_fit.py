@@ -185,6 +185,20 @@ def lacey_mixing_curve_fit(time, m, window_size=20, t0=0, tend=None, k0=0.1):
     In my MEng-RP simulations, this was 20, as this was the point when vibration
     stopped.
 
+    ### Mixing Time, :math:`t_{95}`
+
+    The mixing time of a system can be characterised using the time taken to reach 95%
+    of the maximum degree of mixing, :math:`M_{95}`, and is denoted as :math:`t_{95}`. 
+    :math:`M_{95}` can be calculated using the parameters from the fit as:
+
+    .. math::
+        M_{95} = M_0 + 0.95(M_{plateau} - M_0).
+
+    The :math:`t_{95}` of the input data is the time at which the first value of the 
+    data set reaches or exceeds :math:`M_{95}`. The :math:`t_{95}` of the fitted curve 
+    is the interpolated time at which the fitted curve reaches :math:`M_{95}`.
+
+
     Parameters
     ----------
     time : array-like
@@ -211,15 +225,17 @@ def lacey_mixing_curve_fit(time, m, window_size=20, t0=0, tend=None, k0=0.1):
     time_mixing : array-like
         The time data for the mixing period used in the fit.
     m_mixing : array-like
-        The lacey mixing index data for the mixing period used in the
-        fit.
+        The lacey mixing index data for the mixing period used in the fit.
     m_fit : array-like
-        The predicted lacey mixing index values for the mixing period 
-        calculated using the optimal parameters.
+        The predicted lacey mixing index values for the mixing period calculated using the optimal parameters.
     m_plateau : float
         The calculated plateau value of the Lacey mixing index.
     r2 : float
         The coefficient of determination of the fit.
+    t95_data : float or None
+        The first time in the actual data where the Lacey mixing index reaches 95% of the way from m0 to m_plateau. None if not reached.
+    t95_fit : float or None
+        The interpolated time in the fitted curve where the Lacey mixing index reaches 95% of the way from m0 to m_plateau. None if not reached.
 
     Raises
     ------
@@ -341,4 +357,29 @@ def lacey_mixing_curve_fit(time, m, window_size=20, t0=0, tend=None, k0=0.1):
     
     m_fit = partial_lacey_mixing_curve(time_mixing, *popt)
     r2 = r2_score(m_mixing, m_fit)
-    return popt, pcov, time_mixing, m_mixing, m_fit, m_plateau, r2
+    # Calculate t95 threshold
+    t95_value = m0 + 0.95 * (m_plateau - m0)
+
+    # t95 for actual data
+    t95_data = None
+    above95 = np.where(m_mixing >= t95_value)[0]
+    if above95.size > 0:
+        t95_data = float(time_mixing[above95[0]])
+
+    # t95 for fitted curve (interpolated)
+    t95_fit = None
+    above95_fit = np.where(m_fit >= t95_value)[0]
+    if above95_fit.size > 0:
+        idx = above95_fit[0]
+        if idx == 0:
+            t95_fit = float(time_mixing[0])
+        else:
+            # Linear interpolation between previous and current point
+            x0, x1 = time_mixing[idx-1], time_mixing[idx]
+            y0, y1 = m_fit[idx-1], m_fit[idx]
+            if y1 != y0:
+                t95_fit = float(x0 + (t95_value - y0) * (x1 - x0) / (y1 - y0))
+            else:
+                t95_fit = float(x1)
+
+    return popt, pcov, time_mixing, m_mixing, m_fit, m_plateau, r2, t95_data, t95_fit
