@@ -116,7 +116,7 @@ def lacey_mixing_curve(time, k, tau, m0, m_plateau=1.0):
     
     return [max((m_plateau - (m_plateau - m0) * np.exp(-k*(t - tau))), m0) for t in time]
 
-def lacey_mixing_curve_fit(time, m, window_size=20, t0=0, tend=None, k0=0.1):
+def lacey_mixing_curve_fit(time, m, window_size=20, t0=0, tend=None, k0=0.1, free_plateau=False):
     """
     ## Original DEMToolbox function description from Jack Grogan
 
@@ -215,11 +215,15 @@ def lacey_mixing_curve_fit(time, m, window_size=20, t0=0, tend=None, k0=0.1):
         all the time data from the start time will be used.
     k0 : float, optional
         The initial guess for the rate constant k, by default 0.1.
+    free_plateau : bool, optional
+        If True, m_plateau is treated as a free parameter during fitting, using
+        the empirical value as an initial guess. Defaults to False.
 
     Returns
     -------
     popt : array-like
-        The optimal values for the parameters k and tau.
+        The optimal values for the parameters k and tau (and m_plateau if
+        free_plateau=True).
     pcov : 2D array
         The estimated covariance of popt as returned by curve_fit.
     time_mixing : array-like
@@ -229,7 +233,8 @@ def lacey_mixing_curve_fit(time, m, window_size=20, t0=0, tend=None, k0=0.1):
     m_fit : array-like
         The predicted lacey mixing index values for the mixing period calculated using the optimal parameters.
     m_plateau : float
-        The calculated plateau value of the Lacey mixing index.
+        The calculated plateau value of the Lacey mixing index (empirical
+        average if free_plateau=False, optimised value if free_plateau=True).
     r2 : float
         The coefficient of determination of the fit.
     t95_data : float or None
@@ -312,8 +317,9 @@ def lacey_mixing_curve_fit(time, m, window_size=20, t0=0, tend=None, k0=0.1):
         time_mixing = time_mixing[diff_mask]
         m_mixing = m_mixing[diff_mask]
 
-    if len(time_mixing) < 3:
-        raise ValueError("At least 3 valid data points required to fit the Lacey curve")
+    min_points = 4 if free_plateau else 3
+    if len(time_mixing) < min_points:
+        raise ValueError(f"At least {min_points} valid data points required to fit the Lacey curve")
 
     m0 = m_mixing[0]
     t0 = time_mixing[0]
@@ -346,16 +352,29 @@ def lacey_mixing_curve_fit(time, m, window_size=20, t0=0, tend=None, k0=0.1):
         )
         m_plateau = float(np.mean(m_mixing))
 
-    partial_lacey_mixing_curve = partial(lacey_mixing_curve, m0=m0, m_plateau=m_plateau)
-    popt, pcov = curve_fit(partial_lacey_mixing_curve, 
+    if free_plateau:
+        def fit_func(time, k, tau, m_plat):
+            return lacey_mixing_curve(time, k, tau, m0, m_plat)
+        
+        p0 = (k0, t0, m_plateau)
+        bounds = ([0, t0, 1e-10], [np.inf, np.inf, 1.0])
+    else:
+        fit_func = partial(lacey_mixing_curve, m0=m0, m_plateau=m_plateau)
+        p0 = (k0, t0)
+        bounds = ([0, t0], [np.inf, np.inf])
+
+    popt, pcov = curve_fit(fit_func, 
                         time_mixing, 
                         m_mixing,
-                        p0=(k0, t0), 
-                        bounds=([0, t0], [np.inf, np.inf]),
+                        p0=p0, 
+                        bounds=bounds,
                         maxfev=10000,
                         )
     
-    m_fit = partial_lacey_mixing_curve(time_mixing, *popt)
+    if free_plateau:
+        m_plateau = float(popt[2])
+
+    m_fit = fit_func(time_mixing, *popt)
     r2 = r2_score(m_mixing, m_fit)
     # Calculate t95 threshold
     t95_value = m0 + 0.95 * (m_plateau - m0)
