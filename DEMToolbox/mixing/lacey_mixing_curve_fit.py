@@ -534,6 +534,8 @@ def old_lacey_mixing_curve_fit(time, m, t0=0, tend=None):
     m_fit : array-like
         The predicted lacey mixing index values for the mixing period 
         calculated using the optimal parameters.
+    r2 : float
+        The coefficient of determination (R^2) for the fit.
 
     Raises
     ------
@@ -584,5 +586,5 @@ def old_lacey_mixing_curve_fit(time, m, t0=0, tend=None):
                         )
     
     m_fit = partial_lacey_mixing_curve(time_mixing, *popt)
-
-    return popt, pcov, time_mixing, m_mixing, m_fit
+    r2 = r2_score(m_mixing, m_fit)
+    return popt, pcov, time_mixing, m_mixing, m_fit, r2
