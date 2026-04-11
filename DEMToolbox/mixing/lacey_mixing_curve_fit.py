@@ -716,7 +716,7 @@ def lacey_mixing_curve(time, k, m0, m_plateau=1.0):
     
     return [max((m_plateau - (m_plateau - m0) * np.exp(-k*(t))), m0) for t in time]
 
-def lacey_mixing_curve_fit_extended(time, m, window_size=20, t0=0, tend=None, k0=0.1, free_plateau=False):
+def lacey_mixing_curve_fit(time, m, window_size=20, t0=0, tend=None, k0=0.1, free_plateau=False):
     """
     ## Original DEMToolbox function description from Jack Grogan
 
@@ -805,8 +805,9 @@ def lacey_mixing_curve_fit_extended(time, m, window_size=20, t0=0, tend=None, k0
     popt : array-like
         The optimal values for the parameters k (and m_plateau if
         free_plateau=True).
-    pcov : 2D array
-        The estimated covariance of popt as returned by curve_fit.
+    pcov : 2D array or array-like
+        The estimated covariance of popt as returned by curve_fit, if free_plateau=True.
+        The estimated variance of k if free_plateau=False.
     time_mixing : array-like
         The time data for the mixing period used in the fit.
     m_mixing : array-like
