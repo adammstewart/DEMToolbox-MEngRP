@@ -941,12 +941,12 @@ def lacey_mixing_curve_fit(time, m, window_size=20, t0=0, tend=None, k0=0.1, fre
         def fit_func(time, k, m_plat):
             return lacey_mixing_curve(time, k, m0, m_plat)
         
-        p0 = (k0, t0, m_plateau)
-        bounds = ([0, t0, 1e-10], [np.inf, np.inf, 1.0])
+        p0 = (k0, m_plateau)
+        bounds = ([0, 1e-10], [np.inf, 1.0])
     else:
         fit_func = partial(lacey_mixing_curve, m0=m0, m_plateau=m_plateau)
-        p0 = (k0, t0)
-        bounds = ([0, t0], [np.inf, np.inf])
+        p0 = (k0,)
+        bounds = ([0], [np.inf])
 
     popt, pcov = curve_fit(fit_func, 
                         time_mixing, 
@@ -1144,15 +1144,15 @@ def old_lacey_mixing_curve_fit(time, m, t0=0, tend=None):
     t0 = time_mixing[0]
 
     partial_lacey_mixing_curve = partial(old_lacey_mixing_curve, m0=m0)
-    k, pvar = curve_fit(partial_lacey_mixing_curve, 
+    k_opt, pvar = curve_fit(partial_lacey_mixing_curve, 
                         time_mixing, 
                         m_mixing,
-                        p0=(0, t0), 
-                        bounds=([0, t0], [np.inf, np.inf]),
+                        p0=(0.01,), 
+                        bounds=([0], [np.inf]),
                         maxfev=10000,
                         )
     
-    m_fit = partial_lacey_mixing_curve(time_mixing, *k)
+    m_fit = partial_lacey_mixing_curve(time_mixing, *k_opt)
     r2 = r2_score(m_mixing, m_fit)
 
     t95_value = 0.95 
@@ -1160,6 +1160,8 @@ def old_lacey_mixing_curve_fit(time, m, t0=0, tend=None):
     above95 = np.where(m_mixing >= t95_value)[0]
     if above95.size > 0:
         t95_data = float(time_mixing[above95[0]])
-    t95_fit = - (1 / k) * np.log((0.05) / (1 - m0))
+    t95_fit = - (1 / k_opt[0]) * np.log((0.05) / (1 - m0))
 
-    return k, pvar, time_mixing, m_mixing, m_fit, r2, t95_data, t95_fit
+    k_opt = k_opt[0]
+    pvar_k = pvar[0][0]
+    return k_opt, pvar_k, time_mixing, m_mixing, m_fit, r2, t95_data, t95_fit
