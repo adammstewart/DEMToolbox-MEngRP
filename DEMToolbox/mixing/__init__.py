@@ -1,3 +1,6 @@
 from .lacey_mixing_index import macro_scale_lacey_mixing
-from .lacey_mixing_curve_fit import lacey_mixing_curve, lacey_mixing_curve_fit, old_lacey_mixing_curve, old_lacey_mixing_curve_fit
+from .lacey_mixing_curve_fit import lacey_mixing_curve, lacey_mixing_curve_fit
+from .lacey_mixing_curve_fit import old_lacey_mixing_curve, old_lacey_mixing_curve_fit
+from .lacey_mixing_curve_fit import lacey_mixing_curve_extended, lacey_mixing_curve_fit_extended
+from .lacey_mixing_curve_fit import old_lacey_mixing_curve_extended, old_lacey_mixing_curve_fit_extended
 from .homogeneity_index import homogeneity_index
