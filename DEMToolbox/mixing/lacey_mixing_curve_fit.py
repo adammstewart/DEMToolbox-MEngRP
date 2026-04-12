@@ -4,7 +4,7 @@ from scipy.optimize import curve_fit
 from sklearn.metrics import r2_score
 from functools import partial
 
-def lacey_mixing_curve_extended(time, k, tau, m0, m_plateau=1.0):
+def m_plat_lacey_mixing_curve_extended(time, k, tau, m0, m_plateau=1.0):
     """
     ## Original DEMToolbox function description from Jack Grogan
 
@@ -116,7 +116,7 @@ def lacey_mixing_curve_extended(time, k, tau, m0, m_plateau=1.0):
     
     return [max((m_plateau - (m_plateau - m0) * np.exp(-k*(t - tau))), m0) for t in time]
 
-def lacey_mixing_curve_fit_extended(time, m, window_size=20, t0=0, tend=None, k0=0.1, free_plateau=False):
+def m_plat_lacey_mixing_curve_fit_extended(time, m, window_size=20, t0=0, tend=None, k0=0.1, free_plateau=False):
     """
     ## Original DEMToolbox function description from Jack Grogan
 
@@ -361,12 +361,12 @@ def lacey_mixing_curve_fit_extended(time, m, window_size=20, t0=0, tend=None, k0
 
     if free_plateau:
         def fit_func(time, k, tau, m_plat):
-            return lacey_mixing_curve_extended(time, k, tau, m0, m_plat)
+            return m_plat_lacey_mixing_curve_extended(time, k, tau, m0, m_plat)
         
         p0 = (k0, t0, m_plateau)
         bounds = ([0, t0, 1e-10], [np.inf, np.inf, 1.0])
     else:
-        fit_func = partial(lacey_mixing_curve_extended, m0=m0, m_plateau=m_plateau)
+        fit_func = partial(m_plat_lacey_mixing_curve_extended, m0=m0, m_plateau=m_plateau)
         p0 = (k0, t0)
         bounds = ([0, t0], [np.inf, np.inf])
 
@@ -398,7 +398,7 @@ def lacey_mixing_curve_fit_extended(time, m, window_size=20, t0=0, tend=None, k0
 # Kept for analysing any data that does not fully mix within same time frame as bulk of data.
 
 
-def old_lacey_mixing_curve_extended(time, k, tau, m0):
+def lacey_mixing_curve_extended(time, k, tau, m0):
     """Curve for the Lacey mixing model.
 
     The Lacey mixing model is a exponential model that describes the 
@@ -479,7 +479,7 @@ def old_lacey_mixing_curve_extended(time, k, tau, m0):
     
     return [max((1 - (1 - m0) * np.exp(-k*(t - tau))), m0) for t in time]
 
-def old_lacey_mixing_curve_fit_extended(time, m, t0=0, tend=None):
+def lacey_mixing_curve_fit_extended(time, m, t0=0, tend=None):
     """Fit the Lacey mixing curve to the data.
 
     The Lacey mixing model is a exponential model that describes the 
@@ -607,7 +607,7 @@ def old_lacey_mixing_curve_fit_extended(time, m, t0=0, tend=None):
     m0 = m_mixing[0]
     t0 = time_mixing[0]
 
-    partial_lacey_mixing_curve = partial(old_lacey_mixing_curve_extended, m0=m0)
+    partial_lacey_mixing_curve = partial(lacey_mixing_curve_extended, m0=m0)
     popt, pcov = curve_fit(partial_lacey_mixing_curve, 
                         time_mixing, 
                         m_mixing,
@@ -629,7 +629,7 @@ def old_lacey_mixing_curve_fit_extended(time, m, t0=0, tend=None):
     return popt, pcov, time_mixing, m_mixing, m_fit, r2, t95_data, t95_fit
 
 
-def lacey_mixing_curve(time, k, m0, m_plateau=1.0):
+def m_plat_lacey_mixing_curve(time, k, m0, m_plateau=1.0):
     """
     ## Original DEMToolbox function description from Jack Grogan
 
@@ -716,7 +716,7 @@ def lacey_mixing_curve(time, k, m0, m_plateau=1.0):
     
     return [max((m_plateau - (m_plateau - m0) * np.exp(-k*(t))), m0) for t in time]
 
-def lacey_mixing_curve_fit(time, m, window_size=20, t0=0, tend=None, k0=0.1, free_plateau=False):
+def m_plat_lacey_mixing_curve_fit(time, m, window_size=20, t0=0, tend=None, k0=0.1, free_plateau=False):
     """
     ## Original DEMToolbox function description from Jack Grogan
 
@@ -939,12 +939,12 @@ def lacey_mixing_curve_fit(time, m, window_size=20, t0=0, tend=None, k0=0.1, fre
 
     if free_plateau:
         def fit_func(time, k, m_plat):
-            return lacey_mixing_curve(time, k, m0, m_plat)
+            return m_plat_lacey_mixing_curve(time, k, m0, m_plat)
         
         p0 = (k0, m_plateau)
         bounds = ([0, 1e-10], [np.inf, 1.0])
     else:
-        fit_func = partial(lacey_mixing_curve, m0=m0, m_plateau=m_plateau)
+        fit_func = partial(m_plat_lacey_mixing_curve, m0=m0, m_plateau=m_plateau)
         p0 = (k0,)
         bounds = ([0], [np.inf])
 
@@ -976,7 +976,7 @@ def lacey_mixing_curve_fit(time, m, window_size=20, t0=0, tend=None, k0=0.1, fre
 # Kept for analysing any data that does not fully mix within same time frame as bulk of data.
 
 
-def old_lacey_mixing_curve(time, k, m0):
+def lacey_mixing_curve(time, k, m0):
     """Curve for the Lacey mixing model.
 
     The Lacey mixing model is a exponential model that describes the 
@@ -1032,7 +1032,7 @@ def old_lacey_mixing_curve(time, k, m0):
     
     return [max((1 - (1 - m0) * np.exp(-k*(t))), m0) for t in time]
 
-def old_lacey_mixing_curve_fit(time, m, t0=0, tend=None):
+def lacey_mixing_curve_fit(time, m, t0=0, tend=None):
     """Fit the Lacey mixing curve to the data.
 
     The Lacey mixing model is a exponential model that describes the 
@@ -1143,7 +1143,7 @@ def old_lacey_mixing_curve_fit(time, m, t0=0, tend=None):
     m0 = m_mixing[0]
     t0 = time_mixing[0]
 
-    partial_lacey_mixing_curve = partial(old_lacey_mixing_curve, m0=m0)
+    partial_lacey_mixing_curve = partial(lacey_mixing_curve, m0=m0)
     k_opt, pvar = curve_fit(partial_lacey_mixing_curve, 
                         time_mixing, 
                         m_mixing,
